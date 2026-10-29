@@ -3,39 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Название вашего сайта</title>
-    
-    <!-- Сюда можно подключить внешний файл стилей (CSS) -->
-    <link rel="stylesheet" href="style.css">
+    <title>GitHub Auth - Firebase</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #24292e;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin: 10px;
+            transition: background-color 0.2s;
+        }
+        button:hover { background-color: #444; }
+        #logout-btn { background-color: #d9534f; }
+        #logout-btn:hover { background-color: #c9302c; }
+        #user-info { margin-top: 20px; font-weight: bold; font-size: 18px; }
+    </style>
 </head>
 <body>
 
-    <!-- Шапка сайта (логотип, навигация) -->
-    <header>
-        <nav>
-            <ul>
-                <li><a href="#">Главная</a></li>
-                <li><a href="#">О нас</a></li>
-                <li><a href="#">Контакты</a></li>
-            </ul>
-        </nav>
-    </header>
+    <h2>Авторизация через GitHub</h2>
+    <button id="login-btn">Войти через GitHub</button>
+    <button id="logout-btn" style="display:none;">Выйти</button>
+    <div id="user-info">Вы не вошли в систему</div>
 
-    <!-- Основной контент страницы -->
-    <main>
-        <section>
-            <h1>Добро пожаловать на сайт!</h1>
-            <p>Это универсальная структура. Замените этот текст на свой контент.</p>
-            <button type="button">Узнать больше</button>
-        </section>
-    </main>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAuth, signInWithPopup, signOut, GithubAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
 
-    <!-- Подвал сайта (авторские права, ссылки) -->
-    <footer>
-        <p>&copy; 2026 Все права защищены.</p>
-    </footer>
+        // Ваша конфигурация Firebase
+        const firebaseConfig = {
+          apiKey: "AIzaSyCTHYy-w7Sc3PrxvOXvZsvho-k1iiJaF9I",
+          authDomain: "realtime-datepase.firebaseapp.com",
+          projectId: "realtime-datepase",
+          storageBucket: "realtime-datepase.firebasestorage.app",
+          messagingSenderId: "222361437974",
+          appId: "1:222361437974:web:3a100c361bdad5ea543237",
+          measurementId: "G-T4YJJD4080"
+        };
 
-    <!-- Сюда обычно подключают скрипты (JavaScript), чтобы сайт не тормозил при загрузке -->
-    <script src="script.js"></script>
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GithubAuthProvider();
+
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const userInfo = document.getElementById('user-info');
+
+        // Отслеживание состояния сессии пользователя
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                userInfo.textContent = `Привет, ${user.displayName || 'Пользователь'}!`;
+                loginBtn.style.display = 'none';
+                logoutBtn.style.display = 'inline-block';
+            } else {
+                userInfo.textContent = 'Вы не вошли в систему';
+                loginBtn.style.display = 'inline-block';
+                logoutBtn.style.display = 'none';
+            }
+        });
+
+        // Кнопка входа [1.1]
+        loginBtn.addEventListener('click', async () => {
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                alert("Ошибка авторизации: " + error.message);
+            }
+        });
+
+        // Кнопка выхода
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error("Ошибка при выходе:", error);
+            }
+        });
+    </script>
 </body>
 </html>
+
