@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Auth - Firebase</title>
+    <title>Auth - Firebase</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -19,14 +19,16 @@
             padding: 12px 24px;
             font-size: 16px;
             cursor: pointer;
-            background-color: #24292e;
             color: white;
             border: none;
             border-radius: 5px;
             margin: 10px;
             transition: background-color 0.2s;
         }
-        button:hover { background-color: #444; }
+        #login-btn { background-color: #24292e; }
+        #login-btn:hover { background-color: #444; }
+        #google-btn { background-color: #4285F4; }
+        #google-btn:hover { background-color: #357ae8; }
         #logout-btn { background-color: #d9534f; }
         #logout-btn:hover { background-color: #c9302c; }
         #user-info { margin-top: 20px; font-weight: bold; font-size: 18px; }
@@ -34,16 +36,16 @@
 </head>
 <body>
 
-    <h2>Авторизация через GitHub</h2>
+    <h2>Авторизация</h2>
     <button id="login-btn">Войти через GitHub</button>
+    <button id="google-btn">Войти через Google</button>
     <button id="logout-btn" style="display:none;">Выйти</button>
     <div id="user-info">Вы не вошли в систему</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
-        import { getAuth, signInWithPopup, signOut, GithubAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getAuth, signInWithPopup, signOut, GithubAuthProvider, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
 
-        // Ваша конфигурация Firebase
         const firebaseConfig = {
           apiKey: "AIzaSyCTHYy-w7Sc3PrxvOXvZsvho-k1iiJaF9I",
           authDomain: "realtime-datepase.firebaseapp.com",
@@ -56,35 +58,48 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const provider = new GithubAuthProvider();
+        
+        const githubProvider = new GithubAuthProvider();
+        const googleProvider = new GoogleAuthProvider(); // Инициализация провайдера Google [2]
 
         const loginBtn = document.getElementById('login-btn');
+        const googleBtn = document.getElementById('google-btn');
         const logoutBtn = document.getElementById('logout-btn');
         const userInfo = document.getElementById('user-info');
 
-        // Отслеживание состояния сессии пользователя
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 userInfo.textContent = `Привет, ${user.displayName || 'Пользователь'}!`;
                 loginBtn.style.display = 'none';
+                googleBtn.style.display = 'none';
                 logoutBtn.style.display = 'inline-block';
             } else {
                 userInfo.textContent = 'Вы не вошли в систему';
                 loginBtn.style.display = 'inline-block';
+                googleBtn.style.display = 'inline-block';
                 logoutBtn.style.display = 'none';
             }
         });
 
-        // Кнопка входа [1.1]
+        // Вход через GitHub
         loginBtn.addEventListener('click', async () => {
             try {
-                await signInWithPopup(auth, provider);
+                await signInWithPopup(auth, githubProvider);
             } catch (error) {
                 alert("Ошибка авторизации: " + error.message);
             }
         });
 
-        // Кнопка выхода
+        // Вход через Google [2]
+        googleBtn.addEventListener('click', async () => {
+            try {
+                await signInWithPopup(auth, googleProvider); // Авторизация через Google [2]
+            } catch (error) {
+                alert("Ошибка авторизации: " + error.message);
+            }
+        });
+
+        // Выход
         logoutBtn.addEventListener('click', async () => {
             try {
                 await signOut(auth);
@@ -95,4 +110,3 @@
     </script>
 </body>
 </html>
-
